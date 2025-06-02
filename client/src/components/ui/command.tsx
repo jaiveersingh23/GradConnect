@@ -21,11 +21,9 @@ const Command = React.forwardRef<
 ))
 Command.displayName = CommandPrimitive.displayName
 
-// Keeping a separate props interface for future extensibility
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface CommandDialogProps extends DialogProps {}
-
-const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
+// Removed the empty interface CommandDialogProps
+// Directly use DialogProps for typing props
+const CommandDialog = ({ children, ...props }: DialogProps) => {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0 shadow-lg">
