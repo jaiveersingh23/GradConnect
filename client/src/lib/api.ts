@@ -1,9 +1,19 @@
+// src/lib/api.ts
 
 import { API_ENDPOINTS } from '@/config/api';
+import {
+  RegisterUserData,
+  LoginCredentials,
+  ProfileData,
+  JobData,
+  BlogData,
+  EventData,
+  MessageData,
+} from '@/types/api';
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: any;
+  body?: unknown;
   headers?: Record<string, string>;
 }
 
@@ -56,14 +66,14 @@ class ApiClient {
   }
 
   // Auth methods
-  async register(userData: any) {
+  async register(userData: RegisterUserData) {
     return this.request(API_ENDPOINTS.AUTH.REGISTER, {
       method: 'POST',
       body: userData,
     });
   }
 
-  async login(credentials: any) {
+  async login(credentials: LoginCredentials) {
     return this.request(API_ENDPOINTS.AUTH.LOGIN, {
       method: 'POST',
       body: credentials,
@@ -74,7 +84,7 @@ class ApiClient {
     return this.request(API_ENDPOINTS.AUTH.ME);
   }
 
-  // Users methods
+  // Users
   async getAlumni() {
     return this.request(API_ENDPOINTS.USERS.ALUMNI);
   }
@@ -83,7 +93,7 @@ class ApiClient {
     return this.request(API_ENDPOINTS.USERS.STUDENTS);
   }
 
-  async updateProfile(profileData: any) {
+  async updateProfile(profileData: ProfileData) {
     return this.request(API_ENDPOINTS.USERS.PROFILE, {
       method: 'PUT',
       body: profileData,
@@ -94,7 +104,7 @@ class ApiClient {
     return this.request(API_ENDPOINTS.USERS.BY_ID(id));
   }
 
-  // Jobs methods
+  // Jobs
   async getJobs() {
     return this.request(API_ENDPOINTS.JOBS.LIST);
   }
@@ -103,14 +113,14 @@ class ApiClient {
     return this.request(API_ENDPOINTS.JOBS.BY_ID(id));
   }
 
-  async createJob(jobData: any) {
+  async createJob(jobData: JobData) {
     return this.request(API_ENDPOINTS.JOBS.CREATE, {
       method: 'POST',
       body: jobData,
     });
   }
 
-  // Blogs methods
+  // Blogs
   async getBlogs() {
     return this.request(API_ENDPOINTS.BLOGS.LIST);
   }
@@ -119,14 +129,14 @@ class ApiClient {
     return this.request(API_ENDPOINTS.BLOGS.BY_ID(id));
   }
 
-  async createBlog(blogData: any) {
+  async createBlog(blogData: BlogData) {
     return this.request(API_ENDPOINTS.BLOGS.CREATE, {
       method: 'POST',
       body: blogData,
     });
   }
 
-  // Events methods
+  // Events
   async getEvents() {
     return this.request(API_ENDPOINTS.EVENTS.LIST);
   }
@@ -135,7 +145,7 @@ class ApiClient {
     return this.request(API_ENDPOINTS.EVENTS.BY_ID(id));
   }
 
-  async createEvent(eventData: any) {
+  async createEvent(eventData: EventData) {
     return this.request(API_ENDPOINTS.EVENTS.CREATE, {
       method: 'POST',
       body: eventData,
@@ -154,7 +164,7 @@ class ApiClient {
     });
   }
 
-  // Messages methods
+  // Messages
   async getConversations() {
     return this.request(API_ENDPOINTS.MESSAGES.CONVERSATIONS);
   }
@@ -163,7 +173,7 @@ class ApiClient {
     return this.request(API_ENDPOINTS.MESSAGES.CONVERSATION_BY_ID(id));
   }
 
-  async sendMessage(messageData: any) {
+  async sendMessage(messageData: MessageData) {
     return this.request(API_ENDPOINTS.MESSAGES.SEND, {
       method: 'POST',
       body: messageData,
