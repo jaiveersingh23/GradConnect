@@ -35,3 +35,11 @@ jobs:
 
       - name:  Build
         run: npm run build
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectBaseDir=client
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
