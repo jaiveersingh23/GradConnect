@@ -9,13 +9,58 @@ import { Search, Filter, MessageCircle, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 
-// Mock data for alumni with program field
+// Mock data for alumni with bio field
 const mockAlumni = [
-  { id: 1, name: 'Alex Johnson', branch: 'Computer Science', program: 'BE', batch: '2019-2023', passingYear: 2023, email: 'alex.j@example.com' },
-  { id: 2, name: 'Maya Patel', branch: 'Electrical Engineering', program: 'MTech', batch: '2018-2022', passingYear: 2022, email: 'maya.p@example.com' },
-  { id: 3, name: 'Thomas Chen', branch: 'Mechanical Engineering', program: 'PhD', batch: '2017-2021', passingYear: 2021, email: 't.chen@example.com' },
-  { id: 4, name: 'Sarah Williams', branch: 'Computer Science', program: 'BE', batch: '2019-2023', passingYear: 2023, email: 'sarah.w@example.com' },
-  { id: 5, name: 'James Rodriguez', branch: 'Civil Engineering', program: 'MTech', batch: '2016-2020', passingYear: 2020, email: 'j.rodriguez@example.com' },
+  { 
+    id: 1, 
+    name: 'Alex Johnson', 
+    branch: 'Computer Science', 
+    program: 'BE', 
+    batch: '2019-2023', 
+    passingYear: 2023, 
+    email: 'alex.j@example.com',
+    bio: 'Full-stack developer at Microsoft with expertise in cloud technologies and AI. Passionate about mentoring students in software development.'
+  },
+  { 
+    id: 2, 
+    name: 'Maya Patel', 
+    branch: 'Electrical Engineering', 
+    program: 'MTech', 
+    batch: '2018-2022', 
+    passingYear: 2022, 
+    email: 'maya.p@example.com',
+    bio: 'Senior Engineer at Tesla working on battery management systems. Enthusiastic about sustainable technology and innovation in electric vehicles.'
+  },
+  { 
+    id: 3, 
+    name: 'Thomas Chen', 
+    branch: 'Mechanical Engineering', 
+    program: 'PhD', 
+    batch: '2017-2021', 
+    passingYear: 2021, 
+    email: 't.chen@example.com',
+    bio: 'Research scientist at NASA JPL specializing in robotics and space exploration. Always excited to share knowledge about aerospace engineering.'
+  },
+  { 
+    id: 4, 
+    name: 'Sarah Wilson', 
+    branch: 'Computer Science', 
+    program: 'BE', 
+    batch: '2019-2023', 
+    passingYear: 2023, 
+    email: 'sarah.w@example.com',
+    bio: 'Product Manager at Google focusing on machine learning products. Love helping students understand the intersection of technology and business.'
+  },
+  { 
+    id: 5, 
+    name: 'James Rodriguez', 
+    branch: 'Civil Engineering', 
+    program: 'MTech', 
+    batch: '2016-2020', 
+    passingYear: 2020, 
+    email: 'j.rodriguez@example.com',
+    bio: 'Structural engineer at Bechtel Corporation working on large-scale infrastructure projects. Passionate about sustainable construction practices.'
+  },
 ];
 
 const branches = ['All Branches', 'Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'Civil Engineering'];
@@ -132,23 +177,32 @@ const AlumniDirectory = () => {
                           <User className="h-4 w-4 mr-2" /> Profile
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="max-w-2xl">
                         <DialogHeader>
                           <DialogTitle>{alumni.name}'s Profile</DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4 mt-4">
+                        <div className="space-y-6 mt-4">
                           <div className="flex flex-col items-center justify-center">
-                            <div className="relative w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mb-4">
-                              <span className="text-4xl text-gray-600">{alumni.name.charAt(0)}</span>
+                            <div className="relative w-24 h-24 rounded-full bg-brand-navy flex items-center justify-center mb-4">
+                              <span className="text-4xl text-white font-bold">{alumni.name.charAt(0)}</span>
                             </div>
                             <h2 className="text-xl font-bold">{alumni.name}</h2>
                             <p className="text-gray-500">{alumni.program} - {alumni.branch}</p>
                           </div>
                           
-                          <div className="space-y-2">
-                            <p><strong>Batch:</strong> {alumni.batch}</p>
-                            <p><strong>Year of Passing:</strong> {alumni.passingYear}</p>
-                            <p><strong>Email:</strong> {alumni.email}</p>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p><strong>Batch:</strong> {alumni.batch}</p>
+                              <p><strong>Year of Passing:</strong> {alumni.passingYear}</p>
+                              <p><strong>Email:</strong> {alumni.email}</p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <h3 className="text-lg font-semibold mb-2">Bio</h3>
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                              <p className="text-gray-700">{alumni.bio}</p>
+                            </div>
                           </div>
                         </div>
                       </DialogContent>

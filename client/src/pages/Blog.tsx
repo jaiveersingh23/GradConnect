@@ -2,13 +2,13 @@
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import JobsList from '@/components/jobs/JobsList';
+import BlogList from '@/components/blog/BlogList';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-const Jobs = () => {
+const Blog = () => {
   const { user } = useAuth();
 
   return (
@@ -17,25 +17,25 @@ const Jobs = () => {
       <main className="flex-grow py-16 container">
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Job & Internship Opportunities</h1>
+            <h1 className="text-3xl font-bold">Alumni Blog</h1>
             {user?.role === 'alumni' && (
-              <Link to="/post-job">
+              <Link to="/write-blog">
                 <Button className="bg-brand-navy hover:bg-brand-navy/90 gap-2">
                   <Plus className="h-4 w-4" />
-                  Post a Job
+                  Write Blog
                 </Button>
               </Link>
             )}
           </div>
           <p className="text-xl text-muted-foreground">
-            Discover career opportunities posted by alumni and partner companies.
+            Read insights, experiences, and advice from our alumni community.
           </p>
         </div>
-        <JobsList />
+        <BlogList />
       </main>
       <Footer />
     </div>
   );
 };
 
-export default Jobs;
+export default Blog;

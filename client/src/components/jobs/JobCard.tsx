@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Briefcase } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export interface JobProps {
   id: string;
@@ -19,6 +19,8 @@ export interface JobProps {
 }
 
 const JobCard: React.FC<{ job: JobProps }> = ({ job }) => {
+  const navigate = useNavigate();
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Full-time':
@@ -32,6 +34,10 @@ const JobCard: React.FC<{ job: JobProps }> = ({ job }) => {
       default:
         return 'bg-gray-500 text-white hover:bg-gray-500/90';
     }
+  };
+
+  const handleViewDetails = () => {
+    navigate(`/jobs/${job.id}`);
   };
 
   return (
@@ -56,7 +62,11 @@ const JobCard: React.FC<{ job: JobProps }> = ({ job }) => {
         </div>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" className="w-full border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white">
+        <Button 
+          variant="outline" 
+          className="w-full border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
+          onClick={handleViewDetails}
+        >
           View Details
         </Button>
       </CardFooter>

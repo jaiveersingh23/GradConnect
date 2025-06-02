@@ -13,9 +13,36 @@ const Chat = () => {
   const location = useLocation();
   const { alumniName, alumniId } = location.state || { alumniName: 'Alumni', alumniId: 0 };
   
-  const [messages, setMessages] = useState<{ sender: string; text: string; timestamp: Date }[]>([
-    { sender: 'system', text: `Start a conversation with ${alumniName}`, timestamp: new Date() }
-  ]);
+  // Mock past messages with realistic timestamps
+  const pastMessages = [
+    { 
+      sender: 'alumni', 
+      text: 'Hi! Thanks for connecting with me. How can I help you today?', 
+      timestamp: new Date(Date.now() - 86400000) // 1 day ago
+    },
+    { 
+      sender: 'user', 
+      text: 'Hello! I\'m interested in learning about career opportunities in your field.', 
+      timestamp: new Date(Date.now() - 86340000) // 1 day ago, 1 hour later
+    },
+    { 
+      sender: 'alumni', 
+      text: 'That\'s great! I work in software engineering at Google. What specific areas are you interested in?', 
+      timestamp: new Date(Date.now() - 86280000) // 1 day ago, 2 hours later
+    },
+    { 
+      sender: 'user', 
+      text: 'I\'m particularly interested in machine learning and AI development.', 
+      timestamp: new Date(Date.now() - 86220000) // 1 day ago, 3 hours later
+    },
+    { 
+      sender: 'alumni', 
+      text: 'Perfect! That\'s exactly what I do. Feel free to ask me anything about the field.', 
+      timestamp: new Date(Date.now() - 82800000) // 23 hours ago
+    }
+  ];
+  
+  const [messages, setMessages] = useState(pastMessages);
   const [newMessage, setNewMessage] = useState('');
 
   const handleSendMessage = () => {
@@ -47,6 +74,23 @@ const Chat = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const formatMessageTime = (timestamp: Date) => {
+    const now = new Date();
+    const messageDate = new Date(timestamp);
+    const diffInHours = Math.abs(now.getTime() - messageDate.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 24) {
+      return messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+      return messageDate.toLocaleDateString([], { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
     }
   };
 
@@ -113,7 +157,7 @@ const Chat = () => {
                 >
                   {message.text}
                   <div className={`text-xs mt-1 ${message.sender === 'user' ? 'text-gray-300' : 'text-gray-500'}`}>
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatMessageTime(message.timestamp)}
                   </div>
                 </div>
                 
