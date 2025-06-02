@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: gradconnect-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
