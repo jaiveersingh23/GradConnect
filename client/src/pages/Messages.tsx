@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -10,19 +9,45 @@ import { MessageCircle, Search, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
+interface AlumniChat {
+  id: number;
+  name: string;
+  role: 'alumni';
+  company: string;
+  position: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: boolean;
+  online: boolean;
+}
+
+interface StudentChat {
+  id: number;
+  name: string;
+  role: 'student';
+  usn: string;
+  year: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: boolean;
+  online: boolean;
+}
+
+type Chat = AlumniChat | StudentChat;
+
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   // Mock recent chats data with enhanced information
-  const recentChats = user?.role === 'student' ? [
+  const recentChats: Chat[] = user?.role === 'student' ? [
     {
       id: 1,
       name: 'Jane Smith',
       role: 'alumni',
       company: 'Google',
       position: 'Software Engineer',
-      lastMessage: 'Thanks for reaching out! I\'d be happy to help with your career questions.',
+      lastMessage: "Thanks for reaching out! I'd be happy to help with your career questions.",
       timestamp: '2 hours ago',
       unread: true,
       online: true
@@ -85,7 +110,7 @@ const Messages = () => {
     }
   ];
 
-  const handleChatClick = (chat: any) => {
+  const handleChatClick = (chat: Chat) => {
     navigate('/chat', { state: { alumniName: chat.name, alumniId: chat.id } });
   };
 
@@ -107,7 +132,7 @@ const Messages = () => {
               </Button>
             </div>
             <p className="text-muted-foreground">
-              Your conversations with {user?.role === 'student' ? 'alumni mentors' : 'students you\'re mentoring'}
+              Your conversations with {user?.role === 'student' ? 'alumni mentors' : "students you're mentoring"}
             </p>
           </div>
 
@@ -190,7 +215,7 @@ const Messages = () => {
                     <p className="text-muted-foreground mb-6">
                       Choose a conversation from the left to start messaging
                     </p>
-                    
+
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4 mt-8 p-4 bg-gray-50 rounded-lg">
                       <div className="text-center">
