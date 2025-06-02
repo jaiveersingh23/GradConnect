@@ -5,6 +5,9 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "jsx": "react-jsx",       // or "react" if your React version is <17
+    "module": "ESNext",
+    "target": "ES6",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
