@@ -9,6 +9,7 @@ import { Search, Filter, MessageCircle, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 
+
 // Mock data for alumni with bio field
 const mockAlumni = [
   { 
