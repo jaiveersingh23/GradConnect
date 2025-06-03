@@ -1,70 +1,85 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import JobCard, { JobProps } from './JobCard';
+import { jobService } from '@/services/api';
 
-// Mock data
-const mockJobs: JobProps[] = [
-  {
-    id: '1',
-    title: 'Software Engineer',
-    company: 'Tech Innovations Inc.',
-    location: 'San Francisco, CA',
-    type: 'Full-time',
-    postedBy: {
-      name: 'Sarah Johnson',
-      role: 'Alumni'
-    },
-    createdAt: '2023-05-10T12:00:00Z'
-  },
-  {
-    id: '2',
-    title: 'Data Science Intern',
-    company: 'DataWorks',
-    location: 'Remote',
-    type: 'Internship',
-    postedBy: {
-      name: 'Michael Chen',
-      role: 'Alumni'
-    },
-    createdAt: '2023-05-08T09:30:00Z'
-  },
-  {
-    id: '3',
-    title: 'Marketing Coordinator',
-    company: 'Brand Builders',
-    location: 'New York, NY',
-    type: 'Full-time',
-    postedBy: {
-      name: 'Alex Rodriguez',
-      role: 'Alumni'
-    },
-    createdAt: '2023-05-07T15:45:00Z'
-  },
-  {
-    id: '4',
-    title: 'UX/UI Designer',
-    company: 'Creative Solutions',
-    location: 'Chicago, IL',
-    type: 'Part-time',
-    postedBy: {
-      name: 'Emily Wilson',
-      role: 'Alumni'
-    },
-    createdAt: '2023-05-05T11:20:00Z'
-  }
-];
+interface Job {
+  _id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+  postedBy: {
+    name: string;
+    role: string;
+  };
+  createdAt: string;
+}
 
 const JobsList: React.FC = () => {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const data = await jobService.getJobs();
+        setJobs(data);
+      } catch (err) {
+        setError('Failed to fetch jobs');
+        console.error('Error fetching jobs:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        Loading job opportunities...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  const jobProps: JobProps[] = jobs.map(job => ({
+    id: job._id,
+    title: job.title,
+    company: job.company,
+    location: job.location,
+    type: job.type,
+    postedBy: job.postedBy,
+    createdAt: job.createdAt
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Latest Opportunities</h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockJobs.map(job => (
-          <JobCard key={job.id} job={job} />
-        ))}
-      </div>
+      {jobProps.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No job opportunities available at the moment.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {jobProps.map(job => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

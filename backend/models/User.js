@@ -61,17 +61,31 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
   try {
+    console.log('Hashing password for user:', this.email);
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+    console.log('Password hashed successfully');
     next();
   } catch (error) {
+    console.error('Password hashing error:', error);
     next(error);
   }
 });
 
 // Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+  try {
+    console.log('Comparing password for user:', this.email);
+    console.log('Candidate password length:', candidatePassword.length);
+    console.log('Stored hash length:', this.password.length);
+    
+    const result = await bcrypt.compare(candidatePassword, this.password);
+    console.log('bcrypt.compare result:', result);
+    return result;
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 };
 
 // Remove password from JSON output

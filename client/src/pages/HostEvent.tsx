@@ -13,30 +13,71 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { CalendarPlus, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { eventService } from '@/services/api';
 
 const HostEvent = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     date: '',
     time: '',
-    venue: '',
+    location: '',
     type: '',
-    capacity: ''
+    maxAttendees: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.description || !formData.date || !formData.time || !formData.venue || !formData.type) {
+    if (!formData.title || !formData.description || !formData.date || !formData.time || !formData.location || !formData.type) {
       toast.error('Please fill in all required fields');
       return;
     }
     
-    // Here you would normally save to a database
-    toast.success('Event hosted successfully!');
-    navigate('/events');
+    setIsSubmitting(true);
+
+    try {
+      console.log('Submitting event:', formData);
+      
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        type: formData.type,
+        maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : null
+      };
+
+      const result = await eventService.createEvent(eventData);
+      console.log('Event created successfully:', result);
+      
+      toast.success('Event hosted successfully!');
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        location: '',
+        type: '',
+        maxAttendees: ''
+      });
+
+      // Redirect to events page after a short delay
+      setTimeout(() => {
+        navigate('/events');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast.error('Failed to create event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -96,12 +137,12 @@ const HostEvent = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="venue">Venue *</Label>
+                      <Label htmlFor="location">Location *</Label>
                       <Input
-                        id="venue"
-                        placeholder="Enter event venue..."
-                        value={formData.venue}
-                        onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                        id="location"
+                        placeholder="Enter event location..."
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         required
                       />
                     </div>
@@ -113,23 +154,23 @@ const HostEvent = () => {
                           <SelectValue placeholder="Select event type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="workshop">Workshop</SelectItem>
-                          <SelectItem value="seminar">Seminar</SelectItem>
-                          <SelectItem value="networking">Networking Session</SelectItem>
-                          <SelectItem value="webinar">Webinar</SelectItem>
-                          <SelectItem value="panel">Panel Discussion</SelectItem>
+                          <SelectItem value="Workshop">Workshop</SelectItem>
+                          <SelectItem value="Seminar">Seminar</SelectItem>
+                          <SelectItem value="Networking">Networking Session</SelectItem>
+                          <SelectItem value="Career Fair">Career Fair</SelectItem>
+                          <SelectItem value="Alumni Meet">Alumni Meet</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label htmlFor="capacity">Capacity</Label>
+                      <Label htmlFor="maxAttendees">Max Attendees</Label>
                       <Input
-                        id="capacity"
+                        id="maxAttendees"
                         type="number"
                         placeholder="Maximum attendees"
-                        value={formData.capacity}
-                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                        value={formData.maxAttendees}
+                        onChange={(e) => setFormData({ ...formData, maxAttendees: e.target.value })}
                       />
                     </div>
                   </div>
@@ -154,9 +195,9 @@ const HostEvent = () => {
                       <Button type="button" variant="outline" onClick={() => navigate('/alumni-portal')}>
                         Cancel
                       </Button>
-                      <Button type="submit" className="bg-brand-navy hover:bg-brand-navy/90">
+                      <Button type="submit" className="bg-brand-navy hover:bg-brand-navy/90" disabled={isSubmitting}>
                         <Save className="h-4 w-4 mr-2" />
-                        Host Event
+                        {isSubmitting ? 'Creating Event...' : 'Host Event'}
                       </Button>
                     </div>
                   </div>

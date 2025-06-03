@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,134 +7,66 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Briefcase, MapPin, Calendar, User } from 'lucide-react';
+import { jobService } from '@/services/api';
 
-// Mock job data - in a real app, this would come from an API
-const mockJobDetails = {
-  '1': {
-    id: '1',
-    title: 'Software Engineer',
-    company: 'Tech Innovations Inc.',
-    location: 'San Francisco, CA',
-    type: 'Full-time' as const,
-    salary: '$80,000 - $120,000',
-    description: 'We are looking for a talented Software Engineer to join our growing team. You will be responsible for developing and maintaining web applications using modern technologies.',
-    requirements: [
-      'Bachelor\'s degree in Computer Science or related field',
-      '2+ years of experience in web development',
-      'Proficiency in React, Node.js, and TypeScript',
-      'Experience with cloud platforms (AWS, Azure, or GCP)',
-      'Strong problem-solving skills'
-    ],
-    responsibilities: [
-      'Develop and maintain web applications',
-      'Collaborate with cross-functional teams',
-      'Write clean, maintainable code',
-      'Participate in code reviews',
-      'Troubleshoot and debug applications'
-    ],
-    postedBy: {
-      name: 'Sarah Johnson',
-      role: 'Alumni',
-      email: 'sarah.johnson@techinnovations.com'
-    },
-    createdAt: '2023-05-10T12:00:00Z'
-  },
-  '2': {
-    id: '2',
-    title: 'Data Science Intern',
-    company: 'DataWorks',
-    location: 'Remote',
-    type: 'Internship' as const,
-    salary: '$25/hour',
-    description: 'Join our data science team as an intern and gain hands-on experience with machine learning, data analysis, and visualization.',
-    requirements: [
-      'Currently pursuing a degree in Data Science, Statistics, or related field',
-      'Knowledge of Python and data science libraries (pandas, numpy, scikit-learn)',
-      'Familiarity with SQL and databases',
-      'Basic understanding of machine learning concepts',
-      'Strong analytical and communication skills'
-    ],
-    responsibilities: [
-      'Assist in data collection and cleaning',
-      'Perform exploratory data analysis',
-      'Build and test machine learning models',
-      'Create data visualizations and reports',
-      'Present findings to the team'
-    ],
-    postedBy: {
-      name: 'Michael Chen',
-      role: 'Alumni',
-      email: 'michael.chen@dataworks.com'
-    },
-    createdAt: '2023-05-08T09:30:00Z'
-  },
-  '3': {
-    id: '3',
-    title: 'Marketing Coordinator',
-    company: 'Brand Builders',
-    location: 'New York, NY',
-    type: 'Full-time' as const,
-    salary: '$45,000 - $60,000',
-    description: 'We are seeking a creative and organized Marketing Coordinator to help execute marketing campaigns and support our brand initiatives.',
-    requirements: [
-      'Bachelor\'s degree in Marketing, Communications, or related field',
-      '1-2 years of marketing experience',
-      'Proficiency in social media platforms and marketing tools',
-      'Strong written and verbal communication skills',
-      'Experience with Adobe Creative Suite is a plus'
-    ],
-    responsibilities: [
-      'Coordinate marketing campaigns across multiple channels',
-      'Manage social media accounts and content',
-      'Assist with event planning and execution',
-      'Create marketing materials and presentations',
-      'Analyze campaign performance and report metrics'
-    ],
-    postedBy: {
-      name: 'Alex Rodriguez',
-      role: 'Alumni',
-      email: 'alex.rodriguez@brandbuilders.com'
-    },
-    createdAt: '2023-05-07T15:45:00Z'
-  },
-  '4': {
-    id: '4',
-    title: 'UX/UI Designer',
-    company: 'Creative Solutions',
-    location: 'Chicago, IL',
-    type: 'Part-time' as const,
-    salary: '$30/hour',
-    description: 'Join our design team to create beautiful and intuitive user experiences for our web and mobile applications.',
-    requirements: [
-      'Bachelor\'s degree in Design, HCI, or related field',
-      '2+ years of UX/UI design experience',
-      'Proficiency in Figma, Sketch, or Adobe XD',
-      'Strong portfolio showcasing design projects',
-      'Understanding of user-centered design principles'
-    ],
-    responsibilities: [
-      'Design user interfaces for web and mobile applications',
-      'Conduct user research and usability testing',
-      'Create wireframes, prototypes, and mockups',
-      'Collaborate with developers and product managers',
-      'Maintain and evolve design systems'
-    ],
-    postedBy: {
-      name: 'Emily Wilson',
-      role: 'Alumni',
-      email: 'emily.wilson@creativesolutions.com'
-    },
-    createdAt: '2023-05-05T11:20:00Z'
-  }
-};
+interface JobDetail {
+  _id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
+  salary?: string;
+  description: string;
+  requirements: string[];
+  responsibilities: string[];
+  applicationLink?: string;
+  postedBy: {
+    name: string;
+    role: string;
+    email?: string;
+  };
+  createdAt: string;
+}
 
 const JobDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
-  const job = id ? mockJobDetails[id as keyof typeof mockJobDetails] : null;
+  const [job, setJob] = useState<JobDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!job) {
+  useEffect(() => {
+    const fetchJob = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const data = await jobService.getJobById(id);
+        setJob(data);
+      } catch (err) {
+        setError('Failed to fetch job details');
+        console.error('Error fetching job:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJob();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow py-16 container">
+          <div className="text-center">Loading job details...</div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !job) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />
@@ -195,10 +127,12 @@ const JobDetails = () => {
                   <MapPin className="mr-1 h-4 w-4" />
                   {job.location}
                 </div>
-                <div className="flex items-center">
-                  <Briefcase className="mr-1 h-4 w-4" />
-                  {job.salary}
-                </div>
+                {job.salary && (
+                  <div className="flex items-center">
+                    <Briefcase className="mr-1 h-4 w-4" />
+                    {job.salary}
+                  </div>
+                )}
                 <div className="flex items-center">
                   <Calendar className="mr-1 h-4 w-4" />
                   Posted {new Date(job.createdAt).toLocaleDateString()}
@@ -222,32 +156,36 @@ const JobDetails = () => {
           </Card>
 
           {/* Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                {job.requirements.map((req, index) => (
-                  <li key={index}>{req}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {job.requirements && job.requirements.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Requirements</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  {job.requirements.map((req, index) => (
+                    <li key={index}>{req}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Responsibilities */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Responsibilities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                {job.responsibilities.map((resp, index) => (
-                  <li key={index}>{resp}</li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+          {job.responsibilities && job.responsibilities.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Responsibilities</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  {job.responsibilities.map((resp, index) => (
+                    <li key={index}>{resp}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Contact Information */}
           <Card>
@@ -257,13 +195,21 @@ const JobDetails = () => {
             <CardContent>
               <div className="space-y-2">
                 <p><strong>Contact Person:</strong> {job.postedBy.name}</p>
-                <p><strong>Email:</strong> {job.postedBy.email}</p>
+                {job.postedBy.email && <p><strong>Email:</strong> {job.postedBy.email}</p>}
                 <p><strong>Role:</strong> {job.postedBy.role}</p>
               </div>
               <div className="mt-6">
-                <Button className="bg-brand-navy hover:bg-brand-navy/90">
-                  Apply Now
-                </Button>
+                {job.applicationLink ? (
+                  <a href={job.applicationLink} target="_blank" rel="noopener noreferrer">
+                    <Button className="bg-brand-navy hover:bg-brand-navy/90">
+                      Apply Now
+                    </Button>
+                  </a>
+                ) : (
+                  <Button className="bg-brand-navy hover:bg-brand-navy/90">
+                    Apply Now
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
 
 interface Event {
-  id: number;
+  id: string; // Changed from number to string
   title: string;
   type: string;
   date: string;

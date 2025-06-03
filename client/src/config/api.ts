@@ -1,5 +1,12 @@
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Check if we're in development or production
+const isDevelopment = import.meta.env.DEV;
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:5000'  // Local backend for development
+  : import.meta.env.VITE_API_URL || 'https://your-render-backend-url.onrender.com'; // Replace with your actual Render URL
+
+console.log('API Base URL:', API_BASE_URL);
+console.log('Environment:', isDevelopment ? 'development' : 'production');
 
 export const API_ENDPOINTS = {
   BASE_URL: API_BASE_URL,

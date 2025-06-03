@@ -1,9 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '@/config/api';
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: 'student' | 'alumni';
@@ -25,90 +25,95 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Dummy users data
-const DUMMY_USERS: (User & { password: string })[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john.student@university.edu',
-    password: 'student123',
-    role: 'student',
-    usn: '1XX20CS001',
-    bio: ''
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane.alumni@university.edu',
-    password: 'alumni123',
-    role: 'alumni',
-    batch: '2018-2022',
-    passingYear: '2022',
-    branch: 'Computer Science',
-    program: 'BE',
-    bio: 'Software Engineer at Google with 3+ years of experience in full-stack development. Passionate about mentoring students and helping them navigate their career paths.'
-  },
-  {
-    id: '3',
-    name: 'Mike Johnson',
-    email: 'mike.student@university.edu',
-    password: 'student456',
-    role: 'student',
-    usn: '1XX21CS015',
-    bio: ''
-  },
-  {
-    id: '4',
-    name: 'Sarah Wilson',
-    email: 'sarah.alumni@university.edu',
-    password: 'alumni456',
-    role: 'alumni',
-    batch: '2016-2020',
-    passingYear: '2020',
-    branch: 'Electrical Engineering',
-    program: 'BE',
-    bio: 'Senior Electrical Engineer at Tesla. Specialized in battery technology and sustainable energy solutions. Always excited to share knowledge with upcoming engineers.'
-  }
-];
-
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in (stored in localStorage)
-    const storedUser = localStorage.getItem('gradconnect_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      const storedUser = localStorage.getItem('gradconnect_user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData.token) {
+            // Verify token with backend
+            const response = await fetch(API_ENDPOINTS.AUTH.ME, {
+              headers: {
+                'Authorization': `Bearer ${userData.token}`
+              }
+            });
+            
+            if (response.ok) {
+              const currentUser = await response.json();
+              setUser(currentUser);
+            } else {
+              // Token is invalid, clear storage
+              localStorage.removeItem('gradconnect_user');
+            }
+          }
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('gradconnect_user');
+        }
+      }
+      setIsLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = DUMMY_USERS.find(u => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('gradconnect_user', JSON.stringify(userWithoutPassword));
+    try {
+      console.log('=== FRONTEND LOGIN ATTEMPT ===');
+      console.log('Login URL:', API_ENDPOINTS.AUTH.LOGIN);
+      console.log('Email:', email);
+      console.log('Password provided:', !!password);
+      
+      const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful, received data');
+        const userWithToken = { ...data.user, token: data.token };
+        setUser(data.user);
+        localStorage.setItem('gradconnect_user', JSON.stringify(userWithToken));
+        setIsLoading(false);
+        return true;
+      } else {
+        const errorData = await response.text();
+        console.error('Login failed with status:', response.status);
+        console.error('Error response:', errorData);
+        setIsLoading(false);
+        return false;
+      }
+    } catch (error) {
+      console.error('Login request failed:', error);
       setIsLoading(false);
-      return true;
+      return false;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
-      localStorage.setItem('gradconnect_user', JSON.stringify(updatedUser));
+      const storedData = localStorage.getItem('gradconnect_user');
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+        localStorage.setItem('gradconnect_user', JSON.stringify({ ...parsed, ...userData }));
+      }
     }
   };
 

@@ -12,26 +12,53 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { PenTool, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { blogService } from '@/services/api';
 
 const WriteBlog = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     summary: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.content || !formData.summary) {
       toast.error('Please fill in all fields');
       return;
     }
     
-    // Here you would normally save to a database
-    toast.success('Blog post published successfully!');
-    navigate('/blog');
+    setIsSubmitting(true);
+
+    try {
+      console.log('Submitting blog:', formData);
+      
+      const result = await blogService.createBlog(formData);
+      console.log('Blog created successfully:', result);
+      
+      toast.success('Blog post published successfully!');
+      
+      // Reset form
+      setFormData({
+        title: '',
+        content: '',
+        summary: ''
+      });
+
+      // Redirect to blog page after a short delay
+      setTimeout(() => {
+        navigate('/blog');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error creating blog:', error);
+      toast.error('Failed to publish blog post. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -99,9 +126,9 @@ const WriteBlog = () => {
                       <Button type="button" variant="outline" onClick={() => navigate('/blog')}>
                         Cancel
                       </Button>
-                      <Button type="submit" className="bg-brand-navy hover:bg-brand-navy/90">
+                      <Button type="submit" className="bg-brand-navy hover:bg-brand-navy/90" disabled={isSubmitting}>
                         <Save className="h-4 w-4 mr-2" />
-                        Publish Blog
+                        {isSubmitting ? 'Publishing...' : 'Publish Blog'}
                       </Button>
                     </div>
                   </div>

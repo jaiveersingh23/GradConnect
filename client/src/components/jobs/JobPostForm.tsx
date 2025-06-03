@@ -7,15 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { jobService } from '@/services/api';
+import { useNavigate } from 'react-router-dom';
 
 const JobPostForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     company: '',
     location: '',
     type: '',
+    salary: '',
     description: '',
     requirements: '',
+    responsibilities: '',
     applicationLink: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,21 +38,51 @@ const JobPostForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // This would be replaced with actual API call
-    setTimeout(() => {
+    try {
+      console.log('Submitting job:', formData);
+      
+      // Prepare data for API
+      const jobData = {
+        title: formData.title,
+        company: formData.company,
+        location: formData.location,
+        type: formData.type,
+        salary: formData.salary,
+        description: formData.description,
+        requirements: formData.requirements.split('\n').filter(req => req.trim()),
+        responsibilities: formData.responsibilities.split('\n').filter(resp => resp.trim()),
+        applicationLink: formData.applicationLink
+      };
+
+      const result = await jobService.createJob(jobData);
+      console.log('Job created successfully:', result);
+      
       toast.success('Job posted successfully!');
-      setIsSubmitting(false);
+      
       // Reset form
       setFormData({
         title: '',
         company: '',
         location: '',
         type: '',
+        salary: '',
         description: '',
         requirements: '',
+        responsibilities: '',
         applicationLink: '',
       });
-    }, 1500);
+
+      // Redirect to jobs page after a short delay
+      setTimeout(() => {
+        navigate('/jobs');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error posting job:', error);
+      toast.error('Failed to post job. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -98,22 +133,35 @@ const JobPostForm = () => {
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="type">Job Type</Label>
-            <Select 
-              onValueChange={(value) => handleSelectChange('type', value)}
-              value={formData.type}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select job type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Full-time">Full-time</SelectItem>
-                <SelectItem value="Part-time">Part-time</SelectItem>
-                <SelectItem value="Internship">Internship</SelectItem>
-                <SelectItem value="Contract">Contract</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="type">Job Type</Label>
+              <Select 
+                onValueChange={(value) => handleSelectChange('type', value)}
+                value={formData.type}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select job type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Full-time">Full-time</SelectItem>
+                  <SelectItem value="Part-time">Part-time</SelectItem>
+                  <SelectItem value="Internship">Internship</SelectItem>
+                  <SelectItem value="Contract">Contract</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="salary">Salary (Optional)</Label>
+              <Input
+                id="salary"
+                name="salary"
+                placeholder="e.g. $80,000 - $120,000"
+                value={formData.salary}
+                onChange={handleChange}
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -130,20 +178,32 @@ const JobPostForm = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="requirements">Requirements</Label>
+            <Label htmlFor="requirements">Requirements (One per line)</Label>
             <Textarea
               id="requirements"
               name="requirements"
-              placeholder="List qualifications and skills required"
+              placeholder="Bachelor's degree in Computer Science&#10;3+ years of experience&#10;Proficiency in React and Node.js"
               rows={4}
               required
               value={formData.requirements}
               onChange={handleChange}
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="responsibilities">Responsibilities (One per line)</Label>
+            <Textarea
+              id="responsibilities"
+              name="responsibilities"
+              placeholder="Develop and maintain web applications&#10;Collaborate with cross-functional teams&#10;Write clean, maintainable code"
+              rows={4}
+              value={formData.responsibilities}
+              onChange={handleChange}
+            />
+          </div>
           
           <div className="space-y-2">
-            <Label htmlFor="applicationLink">Application Link</Label>
+            <Label htmlFor="applicationLink">Application Link (Optional)</Label>
             <Input
               id="applicationLink"
               name="applicationLink"

@@ -1,12 +1,13 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar, Clock } from 'lucide-react';
 
 interface Blog {
-  id: number;
+  id: string;
   title: string;
   excerpt: string;
   author: string;
@@ -22,8 +23,14 @@ interface BlogCardProps {
 }
 
 const BlogCard = ({ blog }: BlogCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/blog/${blog.id}`);
+  };
+
   return (
-    <Card className="card-hover cursor-pointer">
+    <Card className="card-hover cursor-pointer" onClick={handleClick}>
       <div className="aspect-video bg-gray-200 rounded-t-lg"></div>
       <CardHeader>
         <div className="flex flex-wrap gap-2 mb-2">

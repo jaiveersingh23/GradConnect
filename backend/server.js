@@ -16,13 +16,37 @@ const messageRoutes = require('./routes/messages');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Headers:', req.headers);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', req.body);
+  }
+  next();
+});
+
 // Middleware
 app.use(helmet());
 app.use(morgan('combined'));
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:8080',
+    process.env.FRONTEND_URL,
+    'grad-connect-seven.vercel.app' // Replace with your actual Vercel URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+console.log('CORS origins:', corsOptions.origin);
+app.use(cors(corsOptions));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -39,9 +63,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
+// Test route for debugging
+app.post('/api/test', (req, res) => {
+  console.log('=== TEST ROUTE HIT ===');
+  console.log('Body:', req.body);
+  res.json({ message: 'Test route working', body: req.body });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error middleware triggered:', err.stack);
   res.status(500).json({ 
     message: 'Something went wrong!', 
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
@@ -50,6 +81,7 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use('*', (req, res) => {
+  console.log('404 - Route not found:', req.method, req.originalUrl);
   res.status(404).json({ message: 'Route not found' });
 });
 
@@ -60,8 +92,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/gradconne
 })
 .then(() => {
   console.log('Connected to MongoDB');
+  console.log('Environment variables loaded:');
+  console.log('- MONGODB_URI:', !!process.env.MONGODB_URI);
+  console.log('- JWT_SECRET:', !!process.env.JWT_SECRET);
+  console.log('- FRONTEND_URL:', process.env.FRONTEND_URL);
+  console.log('- NODE_ENV:', process.env.NODE_ENV);
+  
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`Server ready to accept requests at http://localhost:${PORT}`);
   });
 })
 .catch(err => {

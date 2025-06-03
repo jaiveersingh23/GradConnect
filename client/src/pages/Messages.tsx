@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,114 +9,75 @@ import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Search, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { messageService } from '@/services/api';
 
-interface AlumniChat {
-  id: number;
-  name: string;
-  role: 'alumni';
-  company: string;
-  position: string;
+interface Conversation {
+  _id: string;
+  participants: Array<{
+    _id: string;
+    name: string;
+    role: string;
+    usn?: string;
+    batch?: string;
+    branch?: string;
+  }>;
   lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-  online: boolean;
+  lastMessageAt: string;
 }
-
-interface StudentChat {
-  id: number;
-  name: string;
-  role: 'student';
-  usn: string;
-  year: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-  online: boolean;
-}
-
-type Chat = AlumniChat | StudentChat;
 
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock recent chats data with enhanced information
-  const recentChats: Chat[] = user?.role === 'student' ? [
-    {
-      id: 1,
-      name: 'Jane Smith',
-      role: 'alumni',
-      company: 'Google',
-      position: 'Software Engineer',
-      lastMessage: "Thanks for reaching out! I'd be happy to help with your career questions.",
-      timestamp: '2 hours ago',
-      unread: true,
-      online: true
-    },
-    {
-      id: 2,
-      name: 'Sarah Wilson',
-      role: 'alumni',
-      company: 'Tesla',
-      position: 'Senior Electrical Engineer',
-      lastMessage: 'Let me know if you need any guidance on your projects.',
-      timestamp: '1 day ago',
-      unread: false,
-      online: false
-    },
-    {
-      id: 3,
-      name: 'David Chen',
-      role: 'alumni',
-      company: 'Microsoft',
-      position: 'Product Manager',
-      lastMessage: 'I can share some insights about product management roles.',
-      timestamp: '3 days ago',
-      unread: false,
-      online: true
-    }
-  ] : [
-    {
-      id: 1,
-      name: 'John Doe',
-      role: 'student',
-      usn: '1XX20CS001',
-      year: '3rd Year',
-      lastMessage: 'Thank you for the advice about internships!',
-      timestamp: '1 hour ago',
-      unread: true,
-      online: true
-    },
-    {
-      id: 2,
-      name: 'Mike Johnson',
-      role: 'student',
-      usn: '1XX21CS015',
-      year: '2nd Year',
-      lastMessage: 'Could you review my resume when you have time?',
-      timestamp: '3 hours ago',
-      unread: false,
-      online: false
-    },
-    {
-      id: 3,
-      name: 'Emily Davis',
-      role: 'student',
-      usn: '1XX19CS042',
-      year: '4th Year',
-      lastMessage: 'Looking forward to your mentorship session!',
-      timestamp: '1 day ago',
-      unread: true,
-      online: true
-    }
-  ];
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const data = await messageService.getConversations();
+        console.log('Fetched conversations:', data);
+        setConversations(data);
+      } catch (error) {
+        console.error('Error fetching conversations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleChatClick = (chat: Chat) => {
-    navigate('/chat', { state: { alumniName: chat.name, alumniId: chat.id } });
+    if (user) {
+      fetchConversations();
+    }
+  }, [user]);
+
+  const handleChatClick = (conversation: Conversation) => {
+    const otherParticipant = conversation.participants.find(p => p._id !== user?._id);
+    if (otherParticipant) {
+      navigate(`/chat/${otherParticipant._id}`, { 
+        state: { 
+          participantName: otherParticipant.name, 
+          participantId: otherParticipant._id 
+        } 
+      });
+    }
   };
 
   const handleNewMessage = () => {
     navigate('/alumni');
+  };
+
+  const formatMessageTime = (timestamp: string) => {
+    const now = new Date();
+    const messageDate = new Date(timestamp);
+    const diffInHours = Math.abs(now.getTime() - messageDate.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)} hours ago`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    }
   };
 
   return (
@@ -132,7 +94,7 @@ const Messages = () => {
               </Button>
             </div>
             <p className="text-muted-foreground">
-              Your conversations with {user?.role === 'student' ? 'alumni mentors' : "students you're mentoring"}
+              Your conversations with {user?.role === 'student' ? 'alumni mentors' : 'students you\'re mentoring'}
             </p>
           </div>
 
@@ -151,43 +113,45 @@ const Messages = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {recentChats.length > 0 ? (
+                  {loading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-navy mx-auto mb-4"></div>
+                      <p>Loading conversations...</p>
+                    </div>
+                  ) : conversations.length > 0 ? (
                     <div className="space-y-2">
-                      {recentChats.map((chat) => (
-                        <div
-                          key={chat.id}
-                          onClick={() => handleChatClick(chat)}
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border transition-colors"
-                        >
-                          <div className="relative">
-                            <Avatar className="h-10 w-10">
-                              <AvatarFallback className="bg-brand-navy text-white text-sm">
-                                {chat.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            {chat.online && (
-                              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <h3 className="font-semibold text-sm truncate">{chat.name}</h3>
-                              <span className="text-xs text-muted-foreground">{chat.timestamp}</span>
+                      {conversations.map((conversation) => {
+                        const otherParticipant = conversation.participants.find(p => p._id !== user?._id);
+                        if (!otherParticipant) return null;
+                        
+                        return (
+                          <div
+                            key={conversation._id}
+                            onClick={() => handleChatClick(conversation)}
+                            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border transition-colors"
+                          >
+                            <div className="relative">
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback className="bg-brand-navy text-white text-sm">
+                                  {otherParticipant.name.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
                             </div>
-                            {user?.role === 'student' ? (
-                              <p className="text-xs text-blue-600">{chat.company} • {chat.position}</p>
-                            ) : (
-                              <p className="text-xs text-blue-600">{chat.usn} • {chat.year}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground truncate mt-1">
-                              {chat.lastMessage}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-sm truncate">{otherParticipant.name}</h3>
+                                <span className="text-xs text-muted-foreground">
+                                  {formatMessageTime(conversation.lastMessageAt)}
+                                </span>
+                              </div>
+                              <p className="text-xs text-blue-600 capitalize">{otherParticipant.role}</p>
+                              <p className="text-xs text-muted-foreground truncate mt-1">
+                                {conversation.lastMessage || 'No messages yet'}
+                              </p>
+                            </div>
                           </div>
-                          {chat.unread && (
-                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8">
@@ -215,23 +179,19 @@ const Messages = () => {
                     <p className="text-muted-foreground mb-6">
                       Choose a conversation from the left to start messaging
                     </p>
-
+                    
                     {/* Quick Stats */}
                     <div className="grid grid-cols-3 gap-4 mt-8 p-4 bg-gray-50 rounded-lg">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-brand-navy">{recentChats.length}</div>
+                        <div className="text-2xl font-bold text-brand-navy">{conversations.length}</div>
                         <div className="text-sm text-muted-foreground">Active Chats</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">
-                          {recentChats.filter(chat => chat.online).length}
-                        </div>
+                        <div className="text-2xl font-bold text-green-600">0</div>
                         <div className="text-sm text-muted-foreground">Online Now</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {recentChats.filter(chat => chat.unread).length}
-                        </div>
+                        <div className="text-2xl font-bold text-blue-600">0</div>
                         <div className="text-sm text-muted-foreground">Unread</div>
                       </div>
                     </div>
