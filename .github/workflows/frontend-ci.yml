@@ -52,7 +52,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           port: 22
           script: |
-            cd /path/to/your/frontend
+            cd /client/
             git pull origin main
             npm install
             npm run build
