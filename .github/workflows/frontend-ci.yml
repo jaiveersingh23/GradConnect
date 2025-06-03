@@ -35,6 +35,7 @@ jobs:
 
       - name:  Build
         run: npm run build
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         with:
@@ -42,4 +43,17 @@ jobs:
             -Dsonar.projectBaseDir=client
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      
+
+      - name: Deploy to Amazon EC2
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /path/to/your/frontend
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart frontend

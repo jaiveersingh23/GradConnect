@@ -9,9 +9,9 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=5000
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/gradconnect}
-      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_here}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - MONGODB_URI=${MONGODB_URI:-mongodb+srv://jaiveersingh23:VexJUovAP2mIFJZG@gradconnectcluster.dbvatrq.mongodb.net/?retryWrites=true&w=majority&appName=GradConnectCluster}
+      - JWT_SECRET=${JWT_SECRET:-this_is_a_demo_secret}
+      - FRONTEND_URL=${FRONTEND_URL:-https://grad-connect-seven.vercel.app/}
     depends_on:
       - mongo
     volumes:
@@ -29,11 +29,11 @@ services:
       - MONGO_INITDB_DATABASE=gradconnect
 
   frontend:
-    build: .
+    build: ./client
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:5000
+      - VITE_API_URL=https://grad-connect-seven.vercel.app/
     volumes:
       - .:/app
       - /app/node_modules
