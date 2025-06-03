@@ -1,10 +1,18 @@
 
+// Verify Node.js version and dependencies
+console.log('Node.js version:', process.version);
+console.log('Starting GradConnect Backend...');
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
+
+
+// Verify Express is loaded correctly
+console.log('Express version:', require('express/package.json').version);
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
