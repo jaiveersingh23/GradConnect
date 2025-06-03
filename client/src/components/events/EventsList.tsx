@@ -15,12 +15,12 @@ interface Event {
     name: string;
     role: string;
   };
-  attendees: any[];
+  attendees: string[];
   maxAttendees?: number;
 }
 
 interface EventCardProps {
-  id: string; // Changed from number to string
+  id: string;
   title: string;
   type: string;
   date: string;
@@ -72,7 +72,7 @@ const EventsList = () => {
   }
 
   const eventProps: EventCardProps[] = events.map(event => ({
-    id: event._id, // This is now a string, matching the interface
+    id: event._id,
     title: event.title,
     type: event.type,
     date: event.date,
