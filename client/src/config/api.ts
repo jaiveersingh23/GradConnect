@@ -3,7 +3,7 @@
 const isDevelopment = import.meta.env.DEV;
 const API_BASE_URL = isDevelopment 
   ? 'http://localhost:5000'  // Local backend for development
-  : import.meta.env.VITE_API_URL || 'https://your-render-backend-url.onrender.com'; // Replace with your actual Render URL
+  : import.meta.env.VITE_API_URL || 'https://gradconnect-backend-production.up.railway.app'; // Your actual Railway URL
 
 console.log('API Base URL:', API_BASE_URL);
 console.log('Environment:', isDevelopment ? 'development' : 'production');
