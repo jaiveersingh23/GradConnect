@@ -4,6 +4,12 @@ import EventCard from './EventCard';
 import { eventService } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface Attendee {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 interface Event {
   _id: string;
   title: string;
@@ -17,7 +23,7 @@ interface Event {
     name: string;
     role: string;
   };
-  attendees: any[];
+  attendees: (string | Attendee)[];
   maxAttendees?: number;
 }
 
