@@ -1,9 +1,24 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { jobService } from '@/services/api';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export interface JobProps {
   id: string;
@@ -14,12 +29,20 @@ export interface JobProps {
   postedBy: {
     name: string;
     role: string;
+    _id?: string;
   };
   createdAt: string;
 }
 
-const JobCard: React.FC<{ job: JobProps }> = ({ job }) => {
+interface JobCardProps {
+  job: JobProps;
+  onDelete?: () => void;
+}
+
+const JobCard: React.FC<JobCardProps> = ({ job, onDelete }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -40,6 +63,22 @@ const JobCard: React.FC<{ job: JobProps }> = ({ job }) => {
     navigate(`/jobs/${job.id}`);
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await jobService.deleteJob(job.id);
+      toast.success('Job deleted successfully');
+      onDelete?.();
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast.error('Failed to delete job');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const canDelete = user?._id === job.postedBy._id || user?.role === 'alumni';
+
   return (
     <Card className="card-hover">
       <CardHeader className="pb-2">
@@ -48,7 +87,36 @@ const JobCard: React.FC<{ job: JobProps }> = ({ job }) => {
             <CardTitle className="text-xl font-bold">{job.title}</CardTitle>
             <CardDescription className="text-base">{job.company}</CardDescription>
           </div>
-          <Badge className={getTypeColor(job.type)}>{job.type}</Badge>
+          <div className="flex items-center gap-2">
+            <Badge className={getTypeColor(job.type)}>{job.type}</Badge>
+            {canDelete && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Job Post</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this job post? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      {isDeleting ? 'Deleting...' : 'Delete'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="pb-2">

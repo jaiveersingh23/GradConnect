@@ -10,6 +10,7 @@ interface Job {
   location: string;
   type: 'Full-time' | 'Part-time' | 'Internship' | 'Contract';
   postedBy: {
+    _id: string;
     name: string;
     role: string;
   };
@@ -21,22 +22,26 @@ const JobsList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        setLoading(true);
-        const data = await jobService.getJobs();
-        setJobs(data);
-      } catch (err) {
-        setError('Failed to fetch jobs');
-        console.error('Error fetching jobs:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      const data = await jobService.getJobs();
+      setJobs(data);
+    } catch (err) {
+      setError('Failed to fetch jobs');
+      console.error('Error fetching jobs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchJobs();
   }, []);
+
+  const handleJobDeleted = () => {
+    fetchJobs(); // Refresh the list after deletion
+  };
 
   if (loading) {
     return (
@@ -60,7 +65,11 @@ const JobsList: React.FC = () => {
     company: job.company,
     location: job.location,
     type: job.type,
-    postedBy: job.postedBy,
+    postedBy: {
+      _id: job.postedBy._id,
+      name: job.postedBy.name,
+      role: job.postedBy.role
+    },
     createdAt: job.createdAt
   }));
 
@@ -76,7 +85,7 @@ const JobsList: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {jobProps.map(job => (
-            <JobCard key={job.id} job={job} />
+            <JobCard key={job.id} job={job} onDelete={handleJobDeleted} />
           ))}
         </div>
       )}

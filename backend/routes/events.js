@@ -133,4 +133,28 @@ router.delete('/:id/unregister', auth, async (req, res) => {
   }
 });
 
+// @route   DELETE /api/events/:id
+// @desc    Delete an event
+// @access  Private (Event organizer only)
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    if (event.organizer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this event' });
+    }
+
+    await Event.findByIdAndDelete(req.params.id);
+
+    res.json({ message: 'Event deleted successfully' });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;

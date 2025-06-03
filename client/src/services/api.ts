@@ -93,6 +93,9 @@ export const jobService = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
+  deleteJob: (id: string) => apiRequest(API_ENDPOINTS.JOBS.BY_ID(id), {
+    method: 'DELETE',
+  }),
 };
 
 // Blog services
@@ -103,6 +106,9 @@ export const blogService = {
     method: 'POST',
     body: JSON.stringify(data),
   }),
+  deleteBlog: (id: string) => apiRequest(API_ENDPOINTS.BLOGS.BY_ID(id), {
+    method: 'DELETE',
+  }),
 };
 
 // Event services
@@ -112,6 +118,9 @@ export const eventService = {
   createEvent: (data: EventData) => apiRequest(API_ENDPOINTS.EVENTS.CREATE, {
     method: 'POST',
     body: JSON.stringify(data),
+  }),
+  deleteEvent: (id: string) => apiRequest(API_ENDPOINTS.EVENTS.BY_ID(id), {
+    method: 'DELETE',
   }),
   registerForEvent: (id: string) => apiRequest(API_ENDPOINTS.EVENTS.REGISTER(id), {
     method: 'POST',

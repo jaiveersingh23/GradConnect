@@ -9,6 +9,7 @@ interface Blog {
   content: string;
   summary: string;
   author: {
+    _id: string;
     name: string;
     role: string;
     batch?: string;
@@ -18,7 +19,7 @@ interface Blog {
 }
 
 interface BlogCardProps {
-  id: string; // Changed from number to string
+  id: string;
   title: string;
   excerpt: string;
   author: string;
@@ -27,6 +28,7 @@ interface BlogCardProps {
   readTime: string;
   tags: string[];
   image: string;
+  authorId: string;
 }
 
 const BlogList = () => {
@@ -34,22 +36,26 @@ const BlogList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        setLoading(true);
-        const data = await blogService.getBlogs();
-        setBlogs(data);
-      } catch (err) {
-        setError('Failed to fetch blogs');
-        console.error('Error fetching blogs:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const data = await blogService.getBlogs();
+      setBlogs(data);
+    } catch (err) {
+      setError('Failed to fetch blogs');
+      console.error('Error fetching blogs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchBlogs();
   }, []);
+
+  const handleBlogDeleted = () => {
+    fetchBlogs(); // Refresh the list after deletion
+  };
 
   if (loading) {
     return (
@@ -68,14 +74,15 @@ const BlogList = () => {
   }
 
   const blogProps: BlogCardProps[] = blogs.map(blog => ({
-    id: blog._id, // This is now a string, matching the interface
+    id: blog._id,
     title: blog.title,
     excerpt: blog.summary,
     author: blog.author.name,
+    authorId: blog.author._id,
     authorTitle: `${blog.author.role}${blog.author.batch ? ` - ${blog.author.batch}` : ''}${blog.author.branch ? ` - ${blog.author.branch}` : ''}`,
     publishDate: blog.createdAt,
     readTime: `${Math.ceil(blog.content.length / 1000)} min read`,
-    tags: ['Career', 'Experience'], // You might want to add tags to your Blog model
+    tags: ['Career', 'Experience'],
     image: "/placeholder.svg"
   }));
 
@@ -87,7 +94,7 @@ const BlogList = () => {
         </div>
       ) : (
         blogProps.map((blog) => (
-          <BlogCard key={blog.id} blog={blog} />
+          <BlogCard key={blog.id} blog={blog} onDelete={handleBlogDeleted} />
         ))
       )}
     </div>
