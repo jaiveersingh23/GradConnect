@@ -43,3 +43,12 @@ jobs:
             -Dsonar.projectBaseDir=client
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  deploy-frontend:
+    name: Deploy Frontend to Vercel
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy Frontend to Vercel
+        run: echo "Triggering Vercel Deploy..." 
