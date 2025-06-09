@@ -65,24 +65,29 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  deploy-frontend:
-    name: Deploy Frontend
+  post-build:
+    name: Post-Build Sync
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-      - name: Setup Deploy Frontend
-        run: echo "Preparing to deploy frontend..."
+      - name: Post-Build Dummy Step
+        run: echo "Post-build sync..."
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: post-build
+
+    steps:
       - name: Deploy Frontend to Vercel
         run: echo "Triggering Vercel Deploy..."
 
   deploy-backend:
     name: Deploy Backend
     runs-on: ubuntu-latest
-    needs: build
+    needs: post-build
 
     steps:
-      - name: Setup Deploy Backend
-        run: echo "Preparing to deploy backend..."
       - name: Deploy Backend to Railway
         run: echo "Triggering Railway Deploy..."
