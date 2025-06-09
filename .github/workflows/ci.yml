@@ -86,3 +86,20 @@ jobs:
         run: echo "Preparing to deploy backend..."
       - name: Deploy Backend to Railway
         run: echo "Triggering Railway Deploy..."
+
+  notify:
+    name: Notify on Slack
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend]
+    if: success()
+    steps:
+      - name: Send Slack notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: |
+            ✅ *CI/CD Pipeline Complete!*
+            *Branch:* ${{ github.ref_name }}
+            *Commit:* ${{ github.sha }}
+            *Status:* Success 🚀
+            *Author:* ${{ github.actor }}
