@@ -71,6 +71,8 @@ jobs:
     needs: build
 
     steps:
+      - name: Setup Deploy Frontend
+        run: echo "Preparing to deploy frontend..."
       - name: Deploy Frontend to Vercel
         run: echo "Triggering Vercel Deploy..."
 
@@ -80,5 +82,7 @@ jobs:
     needs: build
 
     steps:
+      - name: Setup Deploy Backend
+        run: echo "Preparing to deploy backend..."
       - name: Deploy Backend to Railway
         run: echo "Triggering Railway Deploy..."
