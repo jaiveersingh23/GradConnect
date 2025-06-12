@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    name: Lint
+    name: Lint & Test
     runs-on: ubuntu-latest
     defaults:
       run:
