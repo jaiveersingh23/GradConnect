@@ -124,6 +124,6 @@ jobs:
             *Branch:* ${{ github.ref_name }}
             *Commit:* ${{ github.sha }}
             *Images pushed to GitHub Container Registry*
-            *Deployments (simulated) successful*
+            *Deployments successful*
             *Status:* Success 🚀
             *Author:* ${{ github.actor }}
